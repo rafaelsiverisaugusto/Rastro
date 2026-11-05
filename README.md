@@ -10,7 +10,7 @@ Projeto do time **Habeas Code** para o Hack Brasil 2026, trilha Meio ambiente & 
 
 ![CI](https://github.com/rafaelsiverisaugusto/Rastro/actions/workflows/ci.yml/badge.svg)
 
-- **Demo:** _(URL da Vercel, a preencher)_
+- **Demo:** https://rastro-sand.vercel.app
 - **Estado:** Fase 0 (fundação) concluída: mapa de satélite da região-piloto, banco com PostGIS e CI.
 
 ## Stack
