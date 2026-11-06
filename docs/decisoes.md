@@ -4,6 +4,32 @@ Decisões técnicas e ajustes em relação ao `PLANO.md`, com o motivo de cada u
 
 ---
 
+## 2026-11-05 · Fase 1: importação (`npm run data:import`)
+
+### D-015 · Resultado da primeira importação e faixa da Resex Verde para Sempre
+
+Primeira carga em 05/11/2026: 3 municípios (25.481 km²), 9.013 DETER (de 02/08/2016 a 23/10/2026), 9.429 PRODES de 2020 a 2025 que tocam a região, 2 TIs (Arara e Cachoeira Seca) e 1 UC. O banco ficou com 46 MB.
+
+A UC é a Resex Verde para Sempre. O CNUC não lista nenhum município-piloto para ela, mas o polígono dela invade o limite municipal do INPE numa faixa estreita de cerca de 11 ha ao longo de 51 km, na divisa entre bases cartográficas diferentes. Mantivemos a faixa: o polígono da UC é o oficial, e uma fazenda que se sobreponha a ela em pelo menos `MIN_OVERLAP_HA` deve, sim, ser sinalizada. As fazendas de demonstração devem ficar longe dessa divisa.
+
+### D-014 · FUNAI: certificado intermediário ausente
+
+O servidor `geoserver.funai.gov.br` não envia o certificado intermediário (Sectigo Public Server Authentication CA OV R36). O curl no Windows completa a cadeia sozinho, mas o Node recusa a conexão. O script baixa esse intermediário do endereço publicado no próprio certificado da FUNAI (campo AIA, `http://crt.sectigo.com/...`) e valida a conexão com as raízes padrão do Node mais esse intermediário. A verificação TLS continua ligada: um intermediário adulterado não fecharia a cadeia até uma raiz confiável.
+
+Banco: o pooler da Supabase usa CA própria. Os scripts aceitam o certificado raiz da Supabase em `SUPABASE_DB_CA_CERT`. Sem ele, a conexão é criptografada, mas sem verificar a cadeia, e o script avisa no log.
+
+### D-013 · Esquema para importação idempotente
+
+Migration `20261106000000_reference_import_keys.sql`:
+
+- `protected_areas` ganhou `external_id` (TI: `terrai_cod`; UC: `cd_cnuc`), `category` (fase da TI ou categoria da UC) e `source_date`, com `unique (kind, external_id)`.
+- `coverage_regions` passou a ter uma linha por município, com `mun_geocode` único. A união das linhas é a região coberta, e a linha que contém a fazenda informa o município dela.
+- No PRODES, `detected_at` recebe o `image_date` e `class_name` recebe `d<ano>`.
+
+Cada passo roda numa transação. DETER e PRODES usam *upsert* por `(source, external_id)`. TI e UC são apagadas e recriadas, porque nenhuma tabela aponta para elas. Cada passo grava uma linha em `data_snapshots`. O PRODES é baixado pelo retângulo da região, mas só entram os polígonos que tocam os três municípios. Importamos o PRODES a partir de 2020: o ano de 2020 entra como contexto anterior ao corte.
+
+---
+
 ## 2026-11-05 · Fase 1: fontes de dados
 
 ### D-012 · Região de cobertura pelo TerraBrasilis e crédito do INPE

@@ -11,7 +11,7 @@ Projeto do time **Habeas Code** para o Hack Brasil 2026, trilha Meio ambiente & 
 ![CI](https://github.com/rafaelsiverisaugusto/Rastro/actions/workflows/ci.yml/badge.svg)
 
 - **Demo:** https://rastro-sand.vercel.app
-- **Estado:** Fase 0 (fundação) concluída: mapa de satélite da região-piloto, banco com PostGIS e CI.
+- **Estado:** Fase 1 em andamento. A importação dos dados oficiais da região-piloto (Medicilândia, Brasil Novo e Uruará, no Pará) está pronta.
 
 ## Stack
 
@@ -25,6 +25,7 @@ Pré-requisitos: Node.js 22 ou superior e um projeto Supabase.
 npm install
 cp .env.example .env.local   # preencha com as chaves do seu projeto Supabase
 npm run db:push              # aplica as migrations de supabase/migrations
+npm run data:import          # importa INPE, FUNAI e MMA da região-piloto (cerca de 1 min)
 npm run dev                  # http://localhost:3000
 ```
 
@@ -37,6 +38,7 @@ npm run dev                  # http://localhost:3000
 | `npm run test` | Testes unitários (Vitest) |
 | `npm run test:e2e` | Testes ponta a ponta (Playwright, desktop e celular) |
 | `npm run db:push` | Aplica as migrations no banco de `SUPABASE_DB_URL` |
+| `npm run data:import` | Importa cobertura, DETER, PRODES, TIs e UCs (passos avulsos: `npm run data:import -- deter prodes`) |
 
 ## Estrutura
 
@@ -49,12 +51,13 @@ src/i18n/             dicionários pt e en
 supabase/migrations/  SQL versionado (PostGIS, tabelas, RLS)
 tests/unit/           Vitest
 tests/e2e/            Playwright
+scripts/              importação de dados e utilitários de banco
 docs/                 decisões e backlog
 ```
 
 ## Dados e licenças
 
-Todas as fontes de dados, licenças e atribuições estão em [`DATA_SOURCES.md`](DATA_SOURCES.md). As decisões técnicas ficam em [`docs/decisoes.md`](docs/decisoes.md).
+Todas as fontes de dados, licenças e atribuições estão em [`DATA_SOURCES.md`](DATA_SOURCES.md). O código é MIT. Os dados do INPE e as camadas derivadas deles são CC BY-SA 4.0 ("Dados: INPE/TerraBrasilis, CC BY-SA 4.0"). As decisões técnicas ficam em [`docs/decisoes.md`](docs/decisoes.md).
 
 ## Licença
 
