@@ -11,7 +11,7 @@ Projeto do time **Habeas Code** para o Hack Brasil 2026, trilha Meio ambiente & 
 ![CI](https://github.com/rafaelsiverisaugusto/Rastro/actions/workflows/ci.yml/badge.svg)
 
 - **Demo:** https://rastro-sand.vercel.app
-- **Estado:** Fase 1 em andamento. A importação dos dados oficiais da região-piloto (Medicilândia, Brasil Novo e Uruará, no Pará) está pronta.
+- **Estado:** Fase 1 em andamento. A importação dos dados oficiais da região-piloto (Medicilândia, Brasil Novo e Uruará, no Pará) e o motor de conformidade estão prontos.
 
 ## Stack
 
@@ -37,6 +37,7 @@ npm run dev                  # http://localhost:3000
 | `npm run format` | Prettier |
 | `npm run test` | Testes unitários (Vitest) |
 | `npm run test:e2e` | Testes ponta a ponta (Playwright, desktop e celular) |
+| `npm run test:sql` | Testes da função SQL do motor de conformidade, numa transação desfeita (precisa de `TEST_DATABASE_URL`, ou de `RASTRO_SQL_TESTS_ON_SUPABASE=1` para usar o banco do `.env.local`) |
 | `npm run db:push` | Aplica as migrations no banco de `SUPABASE_DB_URL` |
 | `npm run data:import` | Importa cobertura, DETER, PRODES, TIs e UCs (passos avulsos: `npm run data:import -- deter prodes`) |
 
@@ -45,12 +46,14 @@ npm run dev                  # http://localhost:3000
 ```
 src/app/              rotas (App Router)
 src/components/       interface (mapa, telas)
+src/lib/compliance/   motor de conformidade: regras puras e testadas
 src/lib/geo/          utilidades geoespaciais e mapa base
 src/lib/supabase/     clientes Supabase (navegador, servidor, admin)
 src/i18n/             dicionários pt e en
 supabase/migrations/  SQL versionado (PostGIS, tabelas, RLS)
 tests/unit/           Vitest
 tests/e2e/            Playwright
+tests/integration/    SQL (PostGIS) com polígonos sintéticos de tests/fixtures
 scripts/              importação de dados e utilitários de banco
 docs/                 decisões e backlog
 ```

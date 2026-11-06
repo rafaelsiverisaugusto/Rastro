@@ -4,6 +4,29 @@ Decisões técnicas e ajustes em relação ao `PLANO.md`, com o motivo de cada u
 
 ---
 
+## 2026-11-05 · Fase 1: motor de conformidade
+
+### D-016 · O SQL mede, o TypeScript decide
+
+O plano pedia o motor "em TypeScript e numa função SQL equivalente". Duas implementações das mesmas regras acabariam divergindo, então dividimos o trabalho:
+
+- **SQL, `public.compliance_facts(geom, border_tolerance_m)`:** só fatos geométricos, com `geography`. Calcula o recuo interno de 10 m (com o polígono original quando o recuo esvazia a fazenda), as sobreposições em hectares com DETER, PRODES, TIs e UCs, a área fora da cobertura, o município e as versões dos dados. Não aplica limite nem data de corte. `compliance_facts_for_farm(farm_id)` é o atalho usado pelo servidor.
+- **TypeScript, `evaluateCompliance(facts)` em `src/lib/compliance/`:** todas as regras da seção 5.2, numa função pura. É o único lugar onde o veredito é decidido. As constantes ficam em `constants.ts`, e a tolerância é passada para o SQL a partir dali.
+- **`runFarmCheck(farmId)`** (somente servidor): chama o SQL, aplica o veredito e grava em `checks` com a service role. As duas funções SQL só podem ser executadas pela `service_role`.
+
+Ajustes em relação ao plano:
+
+- **Cobertura por área, não por contenção estrita:** `NO_COVERAGE` só quando pelo menos `MAX_OUTSIDE_COVERAGE_HA` (0,1 ha) do polígono analisado fica fora dos municípios. Assim as frestas entre municípios vizinhos não tiram a cobertura de uma fazenda na divisa.
+- **Mínimo de sobreposição:** sobreposições abaixo de `MIN_OVERLAP_HA` continuam listadas, com `effect: "info"` e `below_min_overlap: true`, mantendo a classificação original.
+- **Classe desconhecida do DETER:** gera `ATTENTION` depois do corte (`deter_unknown_class`). Nunca é ignorada.
+- **DETER duplicado:** linhas com mesma fonte, classe, data e geometria contam uma vez só (risco da D-008).
+- **Imagem recente:** `imagery: "unavailable"` gera `ATTENTION`. Na Fase 1 o valor é `"not_checked"`, sem efeito, até o serviço de imagens existir (Fase 2).
+- **Datas das versões dos dados:** no horário de Brasília, não em UTC.
+
+Testes: os unitários (`tests/unit/compliance.test.ts`) cobrem as regras. A integração (`tests/integration/compliance-sql.test.ts`) roda o SQL sobre os polígonos sintéticos de `tests/fixtures/compliance-cases.ts`: os 10 casos da seção 5.4, mais fazenda estreita e fazenda na divisa. Tudo roda numa transação desfeita no final. No CI, o job `sql` sobe um PostGIS descartável, aplica `tests/sql/supabase-stub.sql` e as migrations, e roda a integração. Localmente: `RASTRO_SQL_TESTS_ON_SUPABASE=1 npm run test:sql`.
+
+---
+
 ## 2026-11-05 · Fase 1: importação (`npm run data:import`)
 
 ### D-015 · Resultado da primeira importação e faixa da Resex Verde para Sempre

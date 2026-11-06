@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:push": "node --env-file=.env.local scripts/db-push.mjs",
-    "data:import": "node --env-file=.env.local scripts/data-import.mjs"
+    "data:import": "node --env-file=.env.local scripts/data-import.mjs",
+    "test:sql": "node --env-file-if-exists=.env.local scripts/test-sql.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
