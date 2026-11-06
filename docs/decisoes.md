@@ -4,6 +4,43 @@ Decisões técnicas e ajustes em relação ao `PLANO.md`, com o motivo de cada u
 
 ---
 
+## 2026-11-05 · Fase 1: fontes de dados
+
+### D-011 · Região-piloto e licenças
+
+Os municípios-piloto, definidos pelo time, são Medicilândia (1504455), Brasil Novo (1501725) e Uruará (1508159). A região de cobertura é a união dos três limites municipais do IBGE.
+
+Os dados do INPE são CC BY-SA 4.0. O código do Rastro continua MIT, mas a cópia das camadas no nosso banco e os derivados que publicarmos (manchas no mapa, achados no dossiê) ficam sob CC BY-SA 4.0, com atribuição ao INPE. Isso vai constar na página `/metodologia` e no dossiê.
+
+### D-010 · CNUC: shapefile de 2025_08
+
+Os shapefiles do CNUC de 2026 estão publicados em links do SharePoint, que não são estáveis para script. Usamos o `shp_cnuc_2025_08.zip`, hospedado no próprio dados.mma.gov.br. Pela planilha de 2026_07, nenhuma UC abrange os municípios-piloto, então a diferença de versão não muda nenhum resultado na região.
+
+### D-009 · FUNAI: link oficial, com User-Agent do projeto
+
+O endpoint genérico `geoserver.funai.gov.br/geoserver/ows` responde ao GetCapabilities, mas devolve 403 em DescribeFeatureType e GetFeature. Usamos o link de download por UF publicado na página oficial da FUNAI. O servidor recusa o User-Agent padrão do curl e aceita um cliente identificado. Os scripts enviam `Rastro/0.1 (+https://github.com/rafaelsiverisaugusto/Rastro)`. Não simulamos navegador nem contornamos nenhum limite.
+
+### D-008 · DETER e PRODES: CSV em vez de JSON, e nova chave do DETER
+
+As saídas `application/json` e GML do GeoServer do INPE arredondam as coordenadas para 4 casas decimais (cerca de 11 m), da mesma ordem da nossa tolerância de borda. O CSV traz a geometria em WKT com precisão total, igual à do SHAPE-ZIP. Os scripts usam `outputFormat=csv` e sempre `srsName=EPSG:4674`, porque sem ele a camada do PRODES sai em ordem lat/lon.
+
+O plano usava o `gid` do DETER como `external_id`, com `unique (source, external_id)`. O `gid` não é único: o mesmo `13931_hist` aparece em cinco municípios e datas diferentes, e há 301 repetidos só na região-piloto. A combinação `gid|view_date|classname|mun_geocod` não tem nenhuma repetição e passa a ser o `external_id` do DETER. No PRODES, o `external_id` é o `uuid`, que é único.
+
+Risco para o cron (Fase 3): se o INPE mover um alerta da base `_curr` para a `_hist` trocando o `gid`, o mesmo polígono pode entrar duas vezes. O motor deve deduplicar achados de geometria igual.
+
+### D-007 · Classes do DETER
+
+As oito classes da camada (a soma das contagens bate com o total) ficam mapeadas assim:
+
+| Classe | Efeito após o corte |
+|---|---|
+| `DESMATAMENTO_CR`, `DESMATAMENTO_VEG`, `MINERACAO` | Desmatamento: `NON_COMPLIANT` |
+| `DEGRADACAO`, `CICATRIZ_DE_QUEIMADA`, `CS_DESORDENADO`, `CS_GEOMETRICO`, `CORTE_SELETIVO` | `ATTENTION` |
+
+O plano pedia para fechar o mapeamento depois de importar. Fechamos antes, consultando a camada inteira pelo WFS. Na região-piloto aparecem seis classes: `DESMATAMENTO_CR` (6.187), `CICATRIZ_DE_QUEIMADA` (1.253), `DEGRADACAO` (790), `DESMATAMENTO_VEG` (657), `CS_DESORDENADO` (65) e `CS_GEOMETRICO` (61).
+
+---
+
 ## 2026-11-05 · Fase 0
 
 ### D-006 · Escrita no banco: o cliente só cria fazendas
