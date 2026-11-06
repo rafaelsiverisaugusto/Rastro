@@ -49,7 +49,10 @@ test("import a farm file, save and see the verdict with the real DETER alert", a
   await expect(verdict).toContainText("Não conforme");
   await expect(page.getByTestId("findings")).toContainText("DETER · DESMATAMENTO_CR");
   await expect(page.getByTestId("findings")).toContainText("14/02/2024");
-  await expect(page.getByText("Dados: INPE/TerraBrasilis, CC BY-SA 4.0").first()).toBeVisible();
+  // The credit is printed on the page (the map attribution may be collapsed on phones).
+  await expect(
+    page.getByText("Dados: INPE/TerraBrasilis, CC BY-SA 4.0").filter({ visible: true }).first(),
+  ).toBeVisible();
   const resultMap = page.locator('[data-testid="farm-result-map"]:visible');
   await expect(resultMap).toHaveAttribute("data-state", "ready", { timeout: 15_000 });
   await expect(resultMap).toHaveAttribute("data-rendered", /farm:[1-9]/);
