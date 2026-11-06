@@ -17,6 +17,10 @@ test("home shows the satellite map with attribution", async ({ page }) => {
   await expect(page.locator(".maplibregl-ctrl-attrib")).toContainText("Copernicus Sentinel", {
     useInnerText: false,
   });
+  await expect(page.locator(".maplibregl-ctrl-attrib")).toContainText(
+    "Dados: INPE/TerraBrasilis, CC BY-SA 4.0",
+    { useInnerText: false },
+  );
 });
 
 test("language toggle switches to English and back", async ({ page }) => {

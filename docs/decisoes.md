@@ -6,9 +6,15 @@ Decisões técnicas e ajustes em relação ao `PLANO.md`, com o motivo de cada u
 
 ## 2026-11-05 · Fase 1: fontes de dados
 
+### D-012 · Região de cobertura pelo TerraBrasilis e crédito do INPE
+
+**Decisão do time:** os limites municipais vêm da camada `prodes-amazon-nb:municipalities_amazon_biome` do TerraBrasilis, e não da API de malhas do IBGE. Assim todas as camadas de decisão (DETER, PRODES e cobertura) ficam sob a mesma licença, CC BY-SA 4.0.
+
+O código segue MIT. O crédito "Dados: INPE/TerraBrasilis, CC BY-SA 4.0", com o aviso de que as camadas derivadas seguem a mesma licença, aparece no mapa, no dossiê e na página de verificação. O texto fica em um só lugar, `src/lib/attribution.ts`. Detalhes em `DATA_SOURCES.md`.
+
 ### D-011 · Região-piloto e licenças
 
-Os municípios-piloto, definidos pelo time, são Medicilândia (1504455), Brasil Novo (1501725) e Uruará (1508159). A região de cobertura é a união dos três limites municipais do IBGE.
+Os municípios-piloto, definidos pelo time, são Medicilândia (1504455), Brasil Novo (1501725) e Uruará (1508159). A região de cobertura é a união dos três limites municipais (fonte na D-012).
 
 Os dados do INPE são CC BY-SA 4.0. O código do Rastro continua MIT, mas a cópia das camadas no nosso banco e os derivados que publicarmos (manchas no mapa, achados no dossiê) ficam sob CC BY-SA 4.0, com atribuição ao INPE. Isso vai constar na página `/metodologia` e no dossiê.
 

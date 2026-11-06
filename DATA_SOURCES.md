@@ -9,7 +9,7 @@ Toda fonte usada pelo Rastro é oficial e aberta, acessada por API ou download o
 | INPE PRODES (TerraBrasilis) | Desmatamento anual | Confirmada (Fase 1) |
 | FUNAI: terras indígenas | Áreas protegidas | Confirmada (Fase 1) |
 | MMA CNUC: unidades de conservação | Áreas protegidas | Confirmada (Fase 1) |
-| IBGE: malha municipal | Região de cobertura | Confirmada (Fase 1); termos de uso pendentes |
+| INPE TerraBrasilis: municípios | Região de cobertura | Confirmada (Fase 1) |
 | Earth Search STAC (Element 84), `sentinel-2-l2a` | Imagens de antes e depois | Fase 2 |
 
 ---
@@ -46,7 +46,7 @@ Medicilândia, Brasil Novo e Uruará (PA). Retângulo envolvente (EPSG:4674): lo
 | Medicilândia | 1504455 |
 | Uruará | 1508159 |
 
-Códigos conferidos em `https://servicodados.ibge.gov.br/api/v1/localidades/estados/PA/municipios` (05/11/2026).
+Códigos conferidos na API de localidades do IBGE (`https://servicodados.ibge.gov.br/api/v1/localidades/estados/PA/municipios`, 05/11/2026), usada só para consulta e sem copiar dados. Os limites vêm do TerraBrasilis.
 
 Os scripts de importação se identificam com o User-Agent `Rastro/0.1 (+https://github.com/rafaelsiverisaugusto/Rastro)`.
 
@@ -120,11 +120,29 @@ A camada `prodes-legal-amz:yearly_deforestation` (Amazônia Legal) também exist
 - **Licença:** Creative Commons Atribuição, declarada no portal dados.mma.gov.br
 - **Atribuição:** "Unidades de conservação: Cadastro Nacional de Unidades de Conservação (CNUC), Ministério do Meio Ambiente e Mudança do Clima."
 
-## IBGE: malha municipal (região de cobertura)
+## INPE TerraBrasilis: municípios do bioma Amazônia (região de cobertura)
 
-- **Serviço:** API de malhas v3, um município por chamada (o filtro com `|` é rejeitado):
-  `https://servicodados.ibge.gov.br/api/v3/malhas/municipios/{codigo}?formato=application/vnd.geo%2Bjson&qualidade=maxima`
-- **Formato:** GeoJSON, SIRGAS 2000, coordenadas com 4 casas decimais (suficiente para o limite da região)
-- **Acesso:** 05/11/2026
-- **Licença:** **pendente de confirmação.** Os termos encontrados para outros produtos cartográficos do IBGE pedem crédito ("Fonte: IBGE") e vedam a revenda. Não achamos um termo específico da API.
-- **Atribuição:** "Limites municipais: IBGE, Malha Municipal (API de malhas v3)."
+- **Serviço:** WFS do TerraBrasilis, `https://terrabrasilis.dpi.inpe.br/geoserver/prodes-amazon-nb/wfs`
+- **Camada:** `prodes-amazon-nb:municipalities_amazon_biome`
+- **Campos:** `id`, `nome`, `geocodigo` (código IBGE), `anoderefer`, `geom`
+- **Requisição usada:** `GetFeature` com `outputFormat=csv`, `srsName=EPSG:4674` e `CQL_FILTER=geocodigo IN ('1501725','1504455','1508159')`
+- **Projeção:** EPSG:4674, precisão total no CSV
+- **Acesso e conferência:** 05/11/2026
+- **Licença e atribuição:** as mesmas do DETER (CC BY-SA 4.0, INPE/CGCT, TerraBrasilis)
+
+O time escolheu esta camada em vez da API de malhas do IBGE para que todas as camadas de decisão fiquem sob a mesma licença (D-012). A API do IBGE foi testada, mas não achamos um termo de uso específico dela.
+
+---
+
+## Licença dos dados do INPE e crédito obrigatório
+
+Os dados do INPE (DETER, PRODES e municípios do TerraBrasilis) são [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+
+- **Código do Rastro:** continua sob licença MIT. A CC BY-SA vale para os dados, não para o software.
+- **Camadas derivadas:** a cópia das camadas no nosso banco e tudo o que derivamos delas e publicamos (manchas de desmatamento no mapa, achados da checagem, região de cobertura, trechos do dossiê e do GeoJSON) seguem a mesma licença, CC BY-SA 4.0, com atribuição ao INPE.
+- **Crédito exibido:** "Dados: INPE/TerraBrasilis, CC BY-SA 4.0" (em inglês, "Data: INPE/TerraBrasilis, CC BY-SA 4.0"), acompanhado do aviso de que as camadas derivadas seguem a mesma licença.
+- **Onde aparece:**
+  - Mapa: no controle de atribuição, sempre visível (desde a Fase 1)
+  - Dossiê em PDF: na seção de metodologia e fontes (Fase 2)
+  - Página pública de verificação `/v/[code]`: junto às fontes (Fase 3)
+- **Implementação:** textos únicos em `src/lib/attribution.ts` (`inpeCredit`, `derivedLayersNotice`, `inpeAttributionHtml`). Dossiê e verificação devem usar essas funções, sem repetir o texto.

@@ -9,17 +9,21 @@ import {
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
+import { inpeAttributionHtml } from "@/lib/attribution";
 import { buildBasemapStyle, PILOT_VIEW } from "@/lib/geo/basemap";
-import { useDictionary } from "@/i18n/provider";
+import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/utils";
 
 type MapState = "loading" | "ready" | "error";
 
 export default function BaseMap({ className }: { className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
+  const attributionRef = useRef<AttributionControl | null>(null);
   const [state, setState] = useState<MapState>("loading");
   const [attempt, setAttempt] = useState(0);
-  const t = useDictionary();
+  const { t, locale } = useI18n();
+  const localeRef = useRef(locale);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -46,7 +50,14 @@ export default function BaseMap({ className }: { className?: string }) {
 
       map.addControl(new NavigationControl({ showCompass: false }), "top-right");
       map.addControl(new ScaleControl({ unit: "metric" }), "bottom-left");
-      map.addControl(new AttributionControl({ compact: true }), "bottom-right");
+      // INPE credit (CC BY-SA 4.0) is always shown: see src/lib/attribution.ts.
+      const attribution = new AttributionControl({
+        compact: true,
+        customAttribution: inpeAttributionHtml(localeRef.current),
+      });
+      map.addControl(attribution, "bottom-right");
+      mapRef.current = map;
+      attributionRef.current = attribution;
 
       map.once("load", () => setState("ready"));
       // Individual tile failures are recoverable and only logged.
@@ -56,8 +67,25 @@ export default function BaseMap({ className }: { className?: string }) {
     return () => {
       cancelAnimationFrame(frame);
       map?.remove();
+      mapRef.current = null;
+      attributionRef.current = null;
     };
   }, [attempt]);
+
+  // Keep the credit in the current language without recreating the map.
+  useEffect(() => {
+    localeRef.current = locale;
+    const map = mapRef.current;
+    const current = attributionRef.current;
+    if (!map || !current) return;
+    const next = new AttributionControl({
+      compact: true,
+      customAttribution: inpeAttributionHtml(locale),
+    });
+    map.removeControl(current);
+    map.addControl(next, "bottom-right");
+    attributionRef.current = next;
+  }, [locale]);
 
   return (
     <div className={cn("relative overflow-hidden", className)}>
