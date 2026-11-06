@@ -51,11 +51,15 @@ jobs:
       - run: npm ci
       - name: Apply Supabase stub and migrations
         run: |
-          psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -q -f tests/sql/supabase-stub.sql
-          for f in supabase/migrations/*.sql; do
-            echo "Applying $f"
-            psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$f"
-          done
+          apply() {
+            echo "Applying $1"
+            if ! psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$1" 2> psql-error.txt; then
+              echo "::error file=$1::$(tr '\n' ' ' < psql-error.txt)"
+              exit 1
+            fi
+          }
+          apply tests/sql/supabase-stub.sql
+          for f in supabase/migrations/*.sql; do apply "$f"; done
       - run: npx vitest run tests/integration
 
   e2e:
