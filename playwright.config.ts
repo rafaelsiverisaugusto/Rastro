@@ -1,4 +1,9 @@
+import { existsSync } from "node:fs";
+
 import { defineConfig, devices } from "@playwright/test";
+
+// Lets the tests know whether Supabase is configured (skipped otherwise, e.g. CI).
+if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 
 const PORT = Number(process.env.PORT ?? 3100);
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;

@@ -3,6 +3,7 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 import { getSupabasePublicEnv } from "./env";
 
@@ -12,6 +13,9 @@ import { getSupabasePublicEnv } from "./env";
  * Create one per request; never share it.
  */
 export async function createSupabaseServerClient() {
+  // Auth checks token expiry with the clock and calls the network: always at
+  // request time, never during (runtime) prerendering.
+  await connection();
   const { url, anonKey } = getSupabasePublicEnv();
   const cookieStore = await cookies();
   return createServerClient(url, anonKey, {

@@ -4,6 +4,24 @@ Decisões técnicas e ajustes em relação ao `PLANO.md`, com o motivo de cada u
 
 ---
 
+## 2026-11-05 · Fase 1: autenticação e conta de demonstração
+
+### D-017 · Link mágico, conta de demonstração compartilhada e fazendas travadas
+
+- **Link mágico:** Supabase Auth com `signInWithOtp` numa Server Action. O link volta para `/auth/confirm`, que aceita tanto o formato PKCE (`?code=`) quanto o `token_hash`.
+- **Proxy:** `src/proxy.ts` (o antigo middleware, renomeado no Next 16) renova os cookies de sessão e manda para `/entrar` quem não tem sessão em `/app`. As páginas verificam o usuário de novo no servidor com `getClaims()` (`src/lib/auth.ts`). Sem as variáveis da Supabase (CI), o proxy não faz nada.
+- **Conta de demonstração:** usuário único, com e-mail fictício `demo@rastro.example`, criado e confirmado por `npm run data:seed -- account` pela API de administração. O botão "Entrar como demonstração" faz `signInWithPassword` no servidor. A senha fica só em `DEMO_USER_PASSWORD`, no servidor. Ela não é um segredo forte, porque o botão dá o mesmo acesso a qualquer pessoa, mas fica fora do repositório. O formulário de link mágico recusa o e-mail da demonstração.
+- **Fazendas travadas:** a conta é compartilhada pelos jurados, então as fazendas de demonstração têm `is_demo` e `is_locked`. O RLS impede editar ou apagar fazendas travadas e impede o usuário de criar fazendas que se passem por demonstração. Só o seed (service role) mexe nelas.
+- **Cache Components:** `createSupabaseServerClient` chama `await connection()` antes de tudo. Sem isso, o Next tentava pré-renderizar `/app` com os cookies e falhava no `Date.now()` da Supabase. Toda leitura de sessão fica atrás de `<Suspense>`.
+
+**Configuração fora do código (feita pelo time):**
+
+- No painel da Supabase (Authentication > URL Configuration), incluir `http://localhost:3000/auth/confirm` e o domínio da Vercel com `/auth/confirm` nas Redirect URLs.
+- Na Vercel, cadastrar `DEMO_USER_EMAIL` e `DEMO_USER_PASSWORD`.
+- O envio de e-mail padrão da Supabase tem limite baixo por hora. A troca para SMTP próprio (Resend) fica para a Fase 3.
+
+---
+
 ## 2026-11-05 · Fase 1: motor de conformidade
 
 ### D-016 · O SQL mede, o TypeScript decide

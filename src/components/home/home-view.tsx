@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 import { useI18n } from "@/i18n/provider";
 
@@ -20,13 +21,21 @@ export function HomeView() {
           <h1 className="text-xl font-semibold tracking-tight">Rastro</h1>
           <p className="truncate text-sm text-white/80">{t.home.tagline}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => setLocale(locale === "pt" ? "en" : "pt")}
-          className="shrink-0 rounded-md border border-white/30 px-3 py-1.5 text-sm hover:bg-white/10"
-        >
-          {t.common.switchLanguage}
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setLocale(locale === "pt" ? "en" : "pt")}
+            className="rounded-md border border-white/30 px-3 py-1.5 text-sm hover:bg-white/10"
+          >
+            {t.common.switchLanguage}
+          </button>
+          <Link
+            href="/entrar"
+            className="rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-brand-900 hover:bg-white/90"
+          >
+            {t.home.enter}
+          </Link>
+        </div>
       </header>
 
       <main className="relative flex-1">
@@ -35,6 +44,15 @@ export function HomeView() {
           {t.home.pilot}
         </div>
       </main>
+
+      <div className="flex justify-center bg-paper px-4 py-3">
+        <Link
+          href="/entrar"
+          className="inline-flex h-12 w-full max-w-sm items-center justify-center rounded-lg bg-farm px-6 text-base font-semibold text-brand-900 shadow hover:brightness-105"
+        >
+          {t.home.demo}
+        </Link>
+      </div>
 
       <footer className="bg-brand-700 px-4 py-2 text-center text-xs text-white/90 sm:px-6">
         {t.home.disclaimer}
