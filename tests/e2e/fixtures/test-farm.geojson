@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Fazenda de teste (fictícia)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-53.9870053, -3.4008719],
+            [-53.9798188, -3.4008719],
+            [-53.9798188, -3.3936369],
+            [-53.9870053, -3.3936369],
+            [-53.9870053, -3.4008719]
+          ]
+        ]
+      }
+    }
+  ]
+}

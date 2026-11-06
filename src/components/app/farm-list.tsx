@@ -6,6 +6,7 @@ import { ChevronRight, MapPinned, Plus } from "lucide-react";
 
 import { StatusBadge } from "@/components/status-badge";
 import { useI18n } from "@/i18n/provider";
+import { isCommodity } from "@/lib/commodities";
 import type { FarmSummary } from "@/lib/farms";
 
 function formatHa(value: number, locale: string) {
@@ -65,7 +66,8 @@ export function FarmList({ farms, isDemo }: { farms: FarmSummary[]; isDemo: bool
                     )}
                   </div>
                   <p className="text-sm text-neutral-600">
-                    {farm.commodity} · {formatHa(farm.area_ha, locale)} {t.common.hectares}
+                    {isCommodity(farm.commodity) ? t.commodities[farm.commodity] : farm.commodity} ·{" "}
+                    {formatHa(farm.area_ha, locale)} {t.common.hectares}
                     {farm.municipality ? ` · ${farm.municipality}` : ""}
                   </p>
                   <div className="flex flex-wrap items-center gap-2">

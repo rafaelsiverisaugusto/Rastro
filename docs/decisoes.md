@@ -4,6 +4,19 @@ Decisões técnicas e ajustes em relação ao `PLANO.md`, com o motivo de cada u
 
 ---
 
+## 2026-11-05 · Fase 1: fluxo de mapear e resultado
+
+### D-018 · Mapear, salvar e checar
+
+- **Três formas de marcar a área** (`/app/fazendas/nova`): desenho com Terra Draw (polígono, depois ajuste dos pontos no modo de seleção), GPS (`watchPosition` com alta precisão, um ponto a cada 5 m e leituras piores que 20 m descartadas, depois simplificação com Turf) e arquivo GeoJSON ou KML (`@tmcw/togeojson`) com uma única área.
+- **Validação dupla:** `validateFarmPolygon` (`src/lib/geo/farm-geometry.ts`) roda no navegador, para dar resposta imediata, e de novo na Server Action. Ela fecha o anel, remove altitude e pontos repetidos, arredonda para 7 casas e recusa autointerseção, coordenadas fora do Brasil (pega eixos trocados), área abaixo de 0,5 ha ou acima de 5.000 ha e mais de 5.000 vértices. O banco ainda tem `check (ST_IsValid(geom))`.
+- **Cobertura no navegador:** o contorno simplificado da região (`coverage_outline()`, em cache no servidor) aparece tracejado no mapa e gera um aviso se algum vértice ficar fora. Quem decide é o servidor (`NO_COVERAGE`).
+- **Salvar:** a fazenda é gravada como o próprio usuário (RLS). Em seguida, `runFarmCheck` roda com a service role e o usuário vai para o resultado. Se a checagem falhar, a fazenda continua salva e a página oferece "Checar agora".
+- **Resultado** (`/app/fazendas/[id]`): veredito com ícone e texto, explicação, achados (fonte, classe, data, área dentro da fazenda, efeito no veredito), áreas protegidas, versões dos dados, método, crédito do INPE e o aviso de que não é certificação. O mapa mostra as camadas num recorte ao redor da fazenda (`farm_map_layers()`, com RLS do dono). As cores das manchas vêm da mesma `classifyDeforestation` do motor, então o mapa não contradiz o veredito.
+- **Testes e2e** (`tests/e2e/farm-flow.spec.ts`), em desktop e celular: login pelo link mágico (link gerado pela API de administração, sem e-mail), importação de arquivo até o "Não conforme" com um alerta DETER real, desenho no mapa e caminhada com GPS. A geolocalização simulada do Chromium só entrega a primeira posição ao `watchPosition`, por isso o teste injeta uma geolocalização falsa. Os usuários de teste são fictícios (`e2e-<n>@rastro.example`), e as fazendas deles são apagadas depois de cada teste.
+
+---
+
 ## 2026-11-05 · Fase 1: autenticação e conta de demonstração
 
 ### D-017 · Link mágico, conta de demonstração compartilhada e fazendas travadas
