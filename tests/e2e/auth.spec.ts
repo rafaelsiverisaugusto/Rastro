@@ -28,6 +28,7 @@ test("demo sign-in opens the farm panel and sign-out returns home", async ({ pag
   await expect(page).toHaveURL(/\/app$/);
   await expect(page.getByRole("heading", { name: "Minhas fazendas" })).toBeVisible();
   await expect(page.getByText("Demonstração", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("farm-list").getByRole("listitem")).toHaveCount(3);
   await expect(page.getByText("Você está na conta de demonstração")).toBeVisible();
 
   await page.getByRole("button", { name: "Sair" }).click();

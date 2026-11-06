@@ -50,13 +50,15 @@ test("import a farm file, save and see the verdict with the real DETER alert", a
   await expect(page.getByTestId("findings")).toContainText("DETER · DESMATAMENTO_CR");
   await expect(page.getByTestId("findings")).toContainText("14/02/2024");
   await expect(page.getByText("Dados: INPE/TerraBrasilis, CC BY-SA 4.0").first()).toBeVisible();
-  await expect(page.getByTestId("farm-result-map")).toHaveAttribute("data-state", "ready", {
-    timeout: 15_000,
-  });
+  const resultMap = page.locator('[data-testid="farm-result-map"]:visible');
+  await expect(resultMap).toHaveAttribute("data-state", "ready", { timeout: 15_000 });
+  await expect(resultMap).toHaveAttribute("data-rendered", /farm:[1-9]/);
+  await expect(resultMap).toHaveAttribute("data-rendered", /deforestation:[1-9]/);
 
   await page.getByRole("link", { name: "Minhas fazendas" }).click();
-  await expect(page.getByTestId("farm-list")).toContainText("Fazenda Teste E2E");
-  await expect(page.getByTestId("farm-list")).toContainText("Não conforme");
+  const list = page.locator('[data-testid="farm-list"]:visible');
+  await expect(list).toContainText("Fazenda Teste E2E");
+  await expect(list).toContainText("Não conforme");
 });
 
 test("drawing on the map shows the area live and enables Continue when closed", async ({
@@ -66,6 +68,8 @@ test("drawing on the map shows the area live and enables Continue when closed", 
   await page.getByRole("button", { name: /Desenhar no mapa/ }).click();
   const map = page.getByTestId("farm-editor-map");
   await expect(map).toHaveAttribute("data-state", "ready", { timeout: 15_000 });
+  // The dashed outline of the pilot region is drawn.
+  await expect(map).toHaveAttribute("data-rendered", /coverage:[1-9]/);
 
   // Zoom in (+7 levels) so a small on-screen square is a farm-sized area.
   const zoomIn = page.getByRole("button", { name: "Zoom in" });

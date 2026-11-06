@@ -1,0 +1,27 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sítio Rio Verde",
+        "commodity": "cocoa",
+        "fictitious": true,
+        "expected_status": "COMPLIANT",
+        "note": "Fazenda fictícia de demonstração. Polígono desenhado pelo time; não corresponde a nenhum imóvel real."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-52.5122499, -3.4723966],
+            [-52.5077051, -3.4720801],
+            [-52.5072551, -3.4676486],
+            [-52.5126999, -3.4676939],
+            [-52.5122499, -3.4723966]
+          ]
+        ]
+      }
+    }
+  ]
+}

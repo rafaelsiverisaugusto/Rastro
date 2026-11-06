@@ -11,7 +11,7 @@ Projeto do time **Habeas Code** para o Hack Brasil 2026, trilha Meio ambiente & 
 ![CI](https://github.com/rafaelsiverisaugusto/Rastro/actions/workflows/ci.yml/badge.svg)
 
 - **Demo:** https://rastro-sand.vercel.app
-- **Estado:** Fase 1 em andamento. A importação dos dados oficiais da região-piloto (Medicilândia, Brasil Novo e Uruará, no Pará) e o motor de conformidade estão prontos.
+- **Estado:** Fase 1 concluída, aguardando revisão. Dados oficiais da região-piloto (Medicilândia, Brasil Novo e Uruará, no Pará), motor de conformidade, login por link mágico e conta de demonstração, mapeamento da fazenda (desenho, GPS ou arquivo) e tela de resultado.
 
 ## Stack
 
@@ -26,6 +26,7 @@ npm install
 cp .env.example .env.local   # preencha com as chaves do seu projeto Supabase
 npm run db:push              # aplica as migrations de supabase/migrations
 npm run data:import          # importa INPE, FUNAI e MMA da região-piloto (cerca de 1 min)
+npm run data:seed            # conta de demonstração e as 3 fazendas fictícias
 npm run dev                  # http://localhost:3000
 ```
 
@@ -40,6 +41,17 @@ npm run dev                  # http://localhost:3000
 | `npm run test:sql` | Testes da função SQL do motor de conformidade, numa transação desfeita (precisa de `TEST_DATABASE_URL`, ou de `RASTRO_SQL_TESTS_ON_SUPABASE=1` para usar o banco do `.env.local`) |
 | `npm run db:push` | Aplica as migrations no banco de `SUPABASE_DB_URL` |
 | `npm run data:import` | Importa cobertura, DETER, PRODES, TIs e UCs (passos avulsos: `npm run data:import -- deter prodes`) |
+| `npm run data:seed` | Cria a conta de demonstração e as fazendas de `data/demo/`, roda a checagem e falha se algum resultado não for o esperado |
+
+## Demonstração
+
+Na página inicial, **Ver demonstração** leva ao botão **Entrar como demonstração**: uma conta compartilhada com três fazendas fictícias de cacau, travadas contra edição.
+
+| Fazenda | Município | Resultado |
+|---|---|---|
+| Fazenda Boa Esperança | Medicilândia | Não conforme: desmatamento DETER de 12/09/2022, confirmado pelo PRODES |
+| Fazenda Santa Clara | Medicilândia | Conforme |
+| Sítio Rio Verde | Brasil Novo | Conforme (área da simulação de alerta, Fase 3) |
 
 ## Estrutura
 
@@ -54,7 +66,8 @@ supabase/migrations/  SQL versionado (PostGIS, tabelas, RLS)
 tests/unit/           Vitest
 tests/e2e/            Playwright
 tests/integration/    SQL (PostGIS) com polígonos sintéticos de tests/fixtures
-scripts/              importação de dados e utilitários de banco
+scripts/              importação de dados, seed e utilitários
+data/demo/            polígonos fictícios das fazendas de demonstração
 docs/                 decisões e backlog
 ```
 

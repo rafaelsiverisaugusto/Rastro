@@ -13,6 +13,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { useI18n } from "@/i18n/provider";
 import { inpeAttributionHtml } from "@/lib/attribution";
 import { buildBasemapStyle } from "@/lib/geo/basemap";
+import { configureMaplibreWorker } from "@/lib/geo/maplibre-worker";
 import { cn } from "@/lib/utils";
 
 type MapState = "loading" | "ready" | "error";
@@ -28,6 +29,18 @@ export type MapCanvasProps = {
   testId?: string;
   label?: string;
 };
+
+/**
+ * On narrow screens the attribution starts collapsed behind its (i) button so
+ * it does not cover the map; it is still one tap away (and the INPE credit is
+ * also printed on the result page).
+ */
+function collapseAttributionOnSmallScreens(container: HTMLElement) {
+  if (container.clientWidth >= 640) return;
+  container
+    .querySelector(".maplibregl-ctrl-attrib.maplibregl-compact")
+    ?.classList.remove("maplibregl-compact-show");
+}
 
 /**
  * MapLibre map with the satellite base map, the INPE credit (always visible)
@@ -46,6 +59,7 @@ export default function MapCanvas({
   const onReadyRef = useRef(onReady);
   const initialViewRef = useRef(initialView);
   const [state, setState] = useState<MapState>("loading");
+  const [rendered, setRendered] = useState("");
   const [attempt, setAttempt] = useState(0);
   const { t, locale } = useI18n();
   const localeRef = useRef(locale);
@@ -63,6 +77,7 @@ export default function MapCanvas({
     const frame = requestAnimationFrame(() => {
       const view = initialViewRef.current;
       try {
+        configureMaplibreWorker();
         map = new MapLibreMap({
           container,
           style: buildBasemapStyle(),
@@ -89,10 +104,21 @@ export default function MapCanvas({
 
       map.once("load", () => {
         if (!map) return;
+        collapseAttributionOnSmallScreens(container);
         cleanup = onReadyRef.current?.(map);
         setState("ready");
       });
       map.on("error", (event) => console.warn(event.error));
+      // Exposes how many features each GeoJSON source rendered (used by tests
+      // to make sure vector layers really draw, not only the base map).
+      map.on("idle", () => {
+        if (!map) return;
+        const counts = Object.entries(map.getStyle().sources)
+          .filter(([, s]) => s.type === "geojson")
+          .map(([id]) => `${id}:${map!.querySourceFeatures(id).length}`)
+          .join(",");
+        setRendered(counts);
+      });
     });
 
     return () => {
@@ -117,6 +143,7 @@ export default function MapCanvas({
     map.removeControl(current);
     map.addControl(next, "bottom-right");
     attributionRef.current = next;
+    collapseAttributionOnSmallScreens(map.getContainer());
   }, [locale]);
 
   return (
@@ -128,6 +155,7 @@ export default function MapCanvas({
         aria-label={label ?? t.map.label}
         data-testid={testId}
         data-state={state}
+        data-rendered={rendered}
       />
       {state === "loading" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-brand-900/60 text-sm text-white">

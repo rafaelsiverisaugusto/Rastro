@@ -4,6 +4,42 @@ Decisões técnicas e ajustes em relação ao `PLANO.md`, com o motivo de cada u
 
 ---
 
+## 2026-11-06 · Fase 1: fazendas de demonstração e ajustes do mapa
+
+### D-020 · Fazendas de demonstração
+
+Áreas aprovadas pelo time em 06/11/2026, com polígonos em `data/demo/*.geojson`:
+
+| Fazenda | Produto | Município | Área | Resultado |
+|---|---|---|---|---|
+| Fazenda Boa Esperança | Cacau | Medicilândia | 61,0 ha | Não conforme: DETER `DESMATAMENTO_CR` de 12/09/2022 (12,68 ha), confirmado pelo PRODES 2022 (8,44 ha) e 2023 (0,21 ha) |
+| Fazenda Santa Clara | Cacau | Medicilândia | 42,8 ha | Conforme, sem achados (registro mais próximo a 802 m) |
+| Sítio Rio Verde | Cacau | Brasil Novo | 28,0 ha | Conforme, sem achados (nenhum registro a cerca de 3 km). Área da simulação de alerta (Fase 3) |
+
+**Como as áreas foram escolhidas:**
+
+- **Distâncias:** pelo menos 3 km de qualquer divisa municipal, 2 km de TI ou UC (a mais próxima ficou a 19,8 km) e 8 km das sedes municipais. As posições das sedes são aproximadas, porque a API do IBGE não traz coordenadas.
+- **Boa Esperança:** um alerta de 2022 isolado e confirmado pelo PRODES, para que o comparador da Fase 2 mostre mata em 2020 e área aberta depois.
+- **Santa Clara e Rio Verde:** nenhum registro do DETER (qualquer data) nem do PRODES a menos de 500 m.
+- **Conferência visual:** o time conferiu as três no mosaico de satélite.
+
+**Os polígonos** são quadriláteros irregulares desenhados pelo time, sem seguir nenhum limite de lote visível. Não usam CAR nem nenhum dado de pessoa, e os nomes são inventados. A Rio Verde, prevista no plano como café ou cacau, ficou com cacau, coerente com a vegetação.
+
+**`npm run data:seed`** (`scripts/data-seed.ts`, executado com `tsx`):
+
+- Cria ou atualiza a conta de demonstração e as três fazendas, com `is_demo` e `is_locked`.
+- Apaga as fazendas que visitantes criaram na conta compartilhada.
+- Refaz as checagens com o mesmo código do app (`checkFarmWith`, em `src/lib/compliance/check.ts`, usado também por `runFarmCheck`).
+- Termina com erro se alguma fazenda não der o resultado esperado.
+
+### D-019 · Worker do MapLibre, atribuição no celular e rotas preservadas
+
+- **Worker do MapLibre:** o MapLibre 6 procura o worker ao lado do próprio arquivo (`new URL("./maplibre-gl-worker.mjs", import.meta.url)`), e esse arquivo não existe depois que o Turbopack junta o pacote num pedaço. Os tiles de satélite funcionavam, mas nenhuma camada GeoJSON era desenhada (o defeito vinha da Fase 0 e só apareceu quando surgiram camadas vetoriais). Agora `scripts/copy-maplibre-worker.mjs` (`predev` e `prebuild`) copia o worker da versão instalada para `public/maplibre/`, fora do git, e o app chama `setWorkerUrl`. Para pegar regressões, o mapa publica em `data-rendered` quantas feições cada fonte desenhou, e os e2e exigem a fazenda, as manchas e o contorno da região.
+- **Atribuição no celular:** em telas com menos de 640 px, a atribuição começa recolhida no botão (i), porque expandida cobria cerca de um quinto do mapa. Ela continua a um toque, e o crédito do INPE também aparece por escrito na tela de resultado. Isso resolve o item do backlog sobre a escala coberta.
+- **Rotas preservadas:** com Cache Components, o Next mantém até 3 rotas visitadas escondidas no DOM (React `<Activity>`). Ao esconder, os efeitos são desmontados, então o mapa (`map.remove()`) e o GPS (`clearWatch`) são liberados. Nos testes, os localizadores usam `:visible`.
+
+---
+
 ## 2026-11-05 · Fase 1: fluxo de mapear e resultado
 
 ### D-018 · Mapear, salvar e checar

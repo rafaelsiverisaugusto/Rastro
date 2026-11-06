@@ -1,0 +1,27 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Fazenda Boa Esperança",
+        "commodity": "cocoa",
+        "fictitious": true,
+        "expected_status": "NON_COMPLIANT",
+        "note": "Fazenda fictícia de demonstração. Polígono desenhado pelo time; não corresponde a nenhum imóvel real."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-52.968869, -3.1543667],
+            [-52.961382, -3.1547736],
+            [-52.9611571, -3.1480314],
+            [-52.968689, -3.1478958],
+            [-52.968869, -3.1543667]
+          ]
+        ]
+      }
+    }
+  ]
+}

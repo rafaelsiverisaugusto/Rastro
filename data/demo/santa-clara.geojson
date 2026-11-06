@@ -1,0 +1,27 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Fazenda Santa Clara",
+        "commodity": "cocoa",
+        "fictitious": true,
+        "expected_status": "COMPLIANT",
+        "note": "Fazenda fictícia de demonstração. Polígono desenhado pelo time; não corresponde a nenhum imóvel real."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-53.0132396, -3.3924418],
+            [-53.0066704, -3.3927583],
+            [-53.0068954, -3.3870608],
+            [-53.0133746, -3.3874678],
+            [-53.0132396, -3.3924418]
+          ]
+        ]
+      }
+    }
+  ]
+}
